@@ -1,4 +1,6 @@
-cmake_minimum_required(VERSION 3.7)
+cmake_minimum_required(VERSION 3.11)
+
+include(FetchContent)
 
 project(MyFirstVsgApplication
         VERSION 0.0.0
@@ -8,6 +10,22 @@ project(MyFirstVsgApplication
 
 # build all examples into the bin directory
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/bin)
+
+option(USE_EXTERNAL_VSG "Enable this to include VSG without a local install" ON)
+
+if(USE_EXTERNAL_VSG)
+    FetchContent_Declare(
+        vsg
+        GIT_REPOSITORY https://github.com/vsg-dev/VulkanSceneGraph.git
+        GIT_TAG master
+    )
+    
+    FetchContent_GetProperties(vsg)
+    if(NOT vsg_POPULATED)
+        FetchContent_Populate(vsg)
+        add_subdirectory(${vsg_SOURCE_DIR} ${vsg_BINARY_DIR})
+    endif()
+endif()
 
 # Change the default build type to Release
 if(NOT CMAKE_BUILD_TYPE)
@@ -28,7 +46,7 @@ find_package(vsgXchange QUIET)
 set(CMAKE_CXX_STANDARD 17)
 
 # add clobber build target to clear all the non git registered files/directories
-add_custom_target(clobber
+add_custom_target(MyFirstVSGApp_clobber
     COMMAND git clean -d -f -x
 )
 
