@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.11)
 
-include(FetchContent)
+include(ExternalProject)
 
 project(MyFirstVsgApplication
         VERSION 0.0.0
@@ -14,17 +14,26 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/bin)
 option(USE_EXTERNAL_VSG "Enable this to include VSG without a local install" ON)
 
 if(USE_EXTERNAL_VSG)
-    FetchContent_Declare(
-        vsg
+
+    ExternalProject_Add(vsg
         GIT_REPOSITORY https://github.com/vsg-dev/VulkanSceneGraph.git
-        GIT_TAG master
+        SOURCE_DIR "${CMAKE_BINARY_DIR}/vsg-src"
+        BINARY_DIR "${CMAKE_BINARY_DIR}/vsg-build"
+        CONFIGURE_COMMAND ""
+        BUILD_COMMAND ""
+        INSTALL_COMMAND ""
+        TEST_COMMAND ""
     )
     
-    FetchContent_GetProperties(vsg)
-    if(NOT vsg_POPULATED)
-        FetchContent_Populate(vsg)
-        add_subdirectory(${vsg_SOURCE_DIR} ${vsg_BINARY_DIR})
-    endif()
+    ExternalProject_Get_Property (vsg install_dir)
+    
+    execute_process(COMMAND ${CMAKE_COMMAND} -G "${CMAKE_GENERATOR}" . WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/vsg-download)
+    execute_process(COMMAND ${CMAKE_COMMAND} --build . WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/vsg-download)
+    
+    add_subdirectory(${CMAKE_BINARY_DIR}/vsg-src
+                     ${CMAKE_BINARY_DIR}/vsg-build)
+                     
+    
 endif()
 
 # Change the default build type to Release
